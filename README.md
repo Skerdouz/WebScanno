@@ -32,20 +32,22 @@ You can install the required packages by running:
 }
 ```
 
-3. Modify the url variable in `main.py` to specify the website URL you want to scan
+3. (Optional) Customize the wanted urls in `main.py` at line 63:
+```python
+if re.match(r'.*/(wanted_url_1|wanted_url_2|...)', link):
+```
 
-4. Set the max_depth variable (3 by default) to define the maximum depth for recursive scanning
-
-4. Run a terminal in the directory and run the script with the following command:
+4. Run a terminal in the directory and run the script with the following format:
 ```bash
-python main.py
+python main.py <str:url(https://example.com)> <int:max_depth(3)>
 ```
 
 ## Output
 
-After the script finished running, a `results.json` file will be created with all occurrences and cookies usage found.
+After the script finished running, a `results.json` file will be created with all occurrences and cookies usage found,
+and a `wanted_urls.json` containing all the wanted urls found within the website.
 
-results.json example:
+`results.json` example:
 
 ```json
 {
@@ -69,5 +71,14 @@ results.json example:
   "https://certi-data.fr/contact/": {
     [...]
   }
+}
+```
+`wanted_urls.json` example:
+```json
+{
+    "URLS": [
+        "https://certi-data.fr/contact/",
+        "https://certi-data.fr/index.php/contact/"
+    ]
 }
 ```

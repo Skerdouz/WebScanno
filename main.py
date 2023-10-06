@@ -3,13 +3,10 @@ from bs4 import BeautifulSoup
 import re
 import json
 from urllib.parse import urljoin, urlparse, urlunparse
+import sys
 
 
-class StopSearch(Exception):
-    pass
-
-
-# normalise by adding / at the end
+# normalize by adding / at the end
 def normalize_url(url):
     parts = list(urlparse(url))
     if not parts[2].endswith('/'):
@@ -17,9 +14,8 @@ def normalize_url(url):
     return urlunparse(parts)
 
 
-
 # main function
-def search_policies(url, keywords, max_depth, stop_flag, visited_urls):
+def search_policies(url, keywords, max_depth, stop_flag, visited_urls, wanted_urls):
     try:
         if max_depth <= 0 or stop_flag[0]:
             return
@@ -38,17 +34,16 @@ def search_policies(url, keywords, max_depth, stop_flag, visited_urls):
         cookie_info = "yes" if cookies_exist else "no"
         banner_info = "yes" if cookie_banner_exist else "no"
 
-        # print infos in the console
+        # print infos in terminal
         print(f"URL: {url}")
         print(f"Cookies: {'✅' if cookies_exist else '❌'}")
         print(f"Cookie Banner: {'✅' if cookie_banner_exist else '❌'}")
 
         # go through all keywords
-        for keyword in keywords:
+        for u_keyword in keywords:
+            keyword = u_keyword.encode('latin1').decode('utf-8')
             if re.search(keyword, content, re.IGNORECASE):
-                # if keyword found, print info & write in result.json
                 print(f"!!Keyword '{keyword}: ✅")
-                # stop_flag[0] = True
                 results.setdefault(url, {"Cookies": cookie_info, "Cookie banner": banner_info,
                                          "Keywords": []})["Keywords"].append(keyword)
 
@@ -61,28 +56,45 @@ def search_policies(url, keywords, max_depth, stop_flag, visited_urls):
                 if link.startswith('/'):
                     link = urljoin(url, link)
                 if normalize_url(link) not in visited_urls:
-                    search_policies(link, keywords, max_depth - 1, stop_flag, visited_urls)
+                    search_policies(link, keywords, max_depth - 1, stop_flag, visited_urls, wanted_urls)
+
+                    # check if url is a wanted url
+                    # edit wanted urls here: 'example.com/(url1|url2|...)'
+                    if re.match(r'.*/(contact|contacts|policy|privacy|cgu|cgv|confidentiality|terms)', link):
+                        wanted_urls.setdefault("URLS", []).append(link)
 
     except Exception as e:
         print(f"Error on {url}: {str(e)}")
 
 
-with open('keywords.json', 'r') as json_file:
-    data = json.load(json_file)
-    keywords_to_search = data.get('keywords', [])
-
-url = "https://certi-data.fr"
-max_depth = 3
-
-stop_flag = [False]
-visited_urls = set()
-
-results = {}
+def load_keywords(filename):
+    with open(filename, 'r') as json_file:
+        data = json.load(json_file)
+        return data.get('keywords', [])
 
 
-search_policies(url, keywords_to_search, max_depth, stop_flag, visited_urls)
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python main.py <URL> <max_depth>")
+        sys.exit(1)
 
-# if results, then proceed to write in results.json
-if results:
-    with open('results.json', 'w') as json_file:
-        json.dump(results, json_file, indent=4)
+    input_url = sys.argv[1]
+    max_depth = int(sys.argv[2])
+
+    results = {}
+    wanted_urls = {}
+
+    keywords_to_search = load_keywords('keywords.json')
+
+    stop_flag = [False]
+    visited_urls = set()
+
+    search_policies(input_url, keywords_to_search, max_depth, stop_flag, visited_urls, wanted_urls)
+
+    if results:
+        with open('results.json', 'w', encoding='utf-8') as json_file:
+            json.dump(results, json_file, indent=4, ensure_ascii=False)
+
+    if wanted_urls:
+        with open('wanted_urls.json', 'w') as json_file:
+            json.dump(wanted_urls, json_file, indent=4)

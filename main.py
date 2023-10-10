@@ -1,9 +1,11 @@
+import json
+import os
+import re
+import sys
+from urllib.parse import urljoin, urlparse, urlunparse
+
 import requests
 from bs4 import BeautifulSoup
-import re
-import json
-from urllib.parse import urljoin, urlparse, urlunparse
-import sys
 
 
 # normalize by adding / at the end
@@ -99,17 +101,28 @@ if __name__ == "__main__":
 
     stop_flag = [False]
     visited_urls = set()
+    output_directory = input_url.replace("http://", "").replace("https://", "")
 
     search_policies(input_url, keywords_to_search, max_depth, stop_flag, visited_urls, wanted_urls)
 
     if results:
-        filename = (input_url.replace("http://", "").replace("https://", "").replace("www.", "").replace("/", "_").
-                    replace(".", "_") + ".json")
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+
+        filename = os.path.join(output_directory,
+                                input_url.replace("http://", "").replace("https://", "").replace("www.", "").replace(
+                                    "/", "_").
+                                replace(".", "_") + ".json")
         with open(filename, 'w', encoding='utf-8') as json_file:
             json.dump(results, json_file, indent=4, ensure_ascii=False)
 
     if wanted_urls:
-        filename = (input_url.replace("http://", "").replace("https://", "").replace("www.", "").replace("/", "_").
-                    replace(".", "_") + "_wanted.json")
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+
+        filename = os.path.join(output_directory,
+                                input_url.replace("http://", "").replace("https://", "").replace("www.", "").replace(
+                                    "/", "_").
+                                replace(".", "_") + "_wanted.json")
         with open(filename, 'w') as json_file:
             json.dump(wanted_urls, json_file, indent=4)

@@ -11,6 +11,9 @@ def normalize_url(url):
     parts = list(urlparse(url))
     if not parts[2].endswith('/'):
         parts[2] += '/'
+    if parts[1].startswith("www."):
+        parts[1] = parts[1][4:]
+
     return urlunparse(parts)
 
 
@@ -52,6 +55,9 @@ def search_policies(url, keywords, max_depth, stop_flag, visited_urls, wanted_ur
 
         # go through found links on actual url, check if they are related and then proceed to build the url
         for link in links:
+            if len(links) == 0:
+                print("NO URLS FOUNDS")
+                break
             if link.startswith('/') or url in link:
                 if link.startswith('/'):
                     link = urljoin(url, link)
@@ -74,12 +80,15 @@ def load_keywords(filename):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
+    if len(sys.argv) < 2:
         print("Usage: python main.py <URL> <max_depth>")
         sys.exit(1)
 
     input_url = sys.argv[1]
-    max_depth = int(sys.argv[2])
+    if len(sys.argv) >= 3:
+        max_depth = int(sys.argv[2])
+    else:
+        max_depth = 3
 
     results = {}
     wanted_urls = {}
@@ -92,9 +101,11 @@ if __name__ == "__main__":
     search_policies(input_url, keywords_to_search, max_depth, stop_flag, visited_urls, wanted_urls)
 
     if results:
-        with open('results.json', 'w', encoding='utf-8') as json_file:
+        filename = input_url.replace("http://", "").replace("https://", "").replace("www.", "").replace("/", "_").replace(".","_") + ".json"
+        with open(filename, 'w', encoding='utf-8') as json_file:
             json.dump(results, json_file, indent=4, ensure_ascii=False)
 
     if wanted_urls:
-        with open('wanted_urls.json', 'w') as json_file:
+        filename = input_url.replace("http://", "").replace("https://", "").replace("www.", "").replace("/", "_").replace(".", "_") + "_wanted.json"
+        with open(filename, 'w') as json_file:
             json.dump(wanted_urls, json_file, indent=4)

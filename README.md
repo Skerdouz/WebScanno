@@ -19,7 +19,7 @@ You can install the required packages by running:
 
 ## Usage
 
-1. Clone this repository
+1. Clone this repository or Download the zip folder
 
 2. Customize the `keywords.json` file with your desired keywords
 ```json
@@ -39,15 +39,16 @@ if re.match(r'.*/(wanted_url_1|wanted_url_2|...)', link):
 
 4. Run a terminal in the directory and run the script with the following format:
 ```bash
-python main.py <str:url(https://example.com)> <int:max_depth(3)>
+python main.py <str:url> <(optional)int:max_depth[default=3]>
+example: python main.py https://www.certi-data.fr
 ```
 
 ## Output
 
-After the script finished running, a `results.json` file will be created with all occurrences and cookies usage found,
-and a `wanted_urls.json` containing all the wanted urls found within the website.
+After the script finished running, a `{url}.json` file will be created with all occurrences and cookies usage found,
+and a `{url}_wanted.json` containing all the wanted urls found within the website.
 
-`results.json` example:
+`{url}.json` example:
 
 ```json
 {
@@ -73,7 +74,7 @@ and a `wanted_urls.json` containing all the wanted urls found within the website
   }
 }
 ```
-`wanted_urls.json` example:
+`{url}_wanted.json` example:
 ```json
 {
     "URLS": [

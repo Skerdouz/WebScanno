@@ -30,6 +30,9 @@ def search_policies(url, keywords, max_depth, stop_flag, visited_urls, wanted_ur
         response = requests.get(url)
         content = response.text
 
+        soup = BeautifulSoup(content, 'html.parser')
+        links = [a.get('href') for a in soup.find_all('a', href=True)]
+
         # get if cookies/cookie banner exist
         cookies_exist = 'set-cookie' in response.headers
         cookie_banner_exist = 'cookie' in content.lower()
@@ -38,6 +41,8 @@ def search_policies(url, keywords, max_depth, stop_flag, visited_urls, wanted_ur
         banner_info = "yes" if cookie_banner_exist else "no"
 
         # print infos in terminal
+        print("")
+        print(f" ---URL n°{len(visited_urls)}---")
         print(f"URL: {url}")
         print(f"Cookies: {'✅' if cookies_exist else '❌'}")
         print(f"Cookie Banner: {'✅' if cookie_banner_exist else '❌'}")
@@ -46,12 +51,9 @@ def search_policies(url, keywords, max_depth, stop_flag, visited_urls, wanted_ur
         for u_keyword in keywords:
             keyword = u_keyword.encode('latin1').decode('utf-8')
             if re.search(keyword, content, re.IGNORECASE):
-                print(f"!!Keyword '{keyword}: ✅")
+                print(f"!!Keyword -> '{keyword}: ✅")
                 results.setdefault(url, {"Cookies": cookie_info, "Cookie banner": banner_info,
                                          "Keywords": []})["Keywords"].append(keyword)
-
-        soup = BeautifulSoup(content, 'html.parser')
-        links = [a.get('href') for a in soup.find_all('a', href=True)]
 
         # go through found links on actual url, check if they are related and then proceed to build the url
         for link in links:
@@ -101,11 +103,13 @@ if __name__ == "__main__":
     search_policies(input_url, keywords_to_search, max_depth, stop_flag, visited_urls, wanted_urls)
 
     if results:
-        filename = input_url.replace("http://", "").replace("https://", "").replace("www.", "").replace("/", "_").replace(".","_") + ".json"
+        filename = (input_url.replace("http://", "").replace("https://", "").replace("www.", "").replace("/", "_").
+                    replace(".", "_") + ".json")
         with open(filename, 'w', encoding='utf-8') as json_file:
             json.dump(results, json_file, indent=4, ensure_ascii=False)
 
     if wanted_urls:
-        filename = input_url.replace("http://", "").replace("https://", "").replace("www.", "").replace("/", "_").replace(".", "_") + "_wanted.json"
+        filename = (input_url.replace("http://", "").replace("https://", "").replace("www.", "").replace("/", "_").
+                    replace(".", "_") + "_wanted.json")
         with open(filename, 'w') as json_file:
             json.dump(wanted_urls, json_file, indent=4)

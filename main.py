@@ -2,7 +2,7 @@ import re
 import sys
 from urllib.parse import urljoin
 
-from functions import normalize_url, load_keywords, dump_results, dump_urls
+from functions import normalize_url, load_keywords, dump_results, dump_urls, lowercase_first, uppercase_first
 
 import requests
 from bs4 import BeautifulSoup
@@ -44,10 +44,16 @@ def search_policies(url, keywords, max_depth, stop_flag, visited_urls, wanted_ur
         # go through all keywords
         for u_keyword in keywords:
             keyword = u_keyword.encode('latin1').decode('utf-8')
+            t_keyword = uppercase_first(keyword)
             if re.search(keyword, content, re.IGNORECASE):
                 print(f"!!Keyword -> '{keyword}: ✅")
                 results.setdefault(url, {"Cookies": cookie_info, "Cookie banner": banner_info,
-                                         "Keywords": []})["Keywords"].append(keyword)
+                                         "Keywords": []})["Keywords"].append(t_keyword)
+            t_keyword = lowercase_first(keyword)
+            if re.search(keyword, content, re.IGNORECASE):
+                print(f"!!Keyword -> '{keyword}: ✅")
+                results.setdefault(url, {"Cookies": cookie_info, "Cookie banner": banner_info,
+                                         "Keywords": []})["Keywords"].append(t_keyword)
 
         # go through found links on actual url, check if they are related and then proceed to build the url
         for link in links:

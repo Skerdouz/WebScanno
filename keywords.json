@@ -20,5 +20,15 @@
         "@contact",
         "droits",
         "exercice de vos droits"
+    ],
+    "urls": [
+        "contact",
+        "contacts",
+        "policy",
+        "privacy",
+        "cgu",
+        "cgv",
+        "confidentiality",
+        "terms"
     ]
 }

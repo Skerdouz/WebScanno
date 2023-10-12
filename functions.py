@@ -28,9 +28,12 @@ def uppercase_first(word: str) -> str:
 
 
 def load_keywords(filename):
-    with open(filename, 'r') as json_file:
-        data = json.load(json_file)
-        return data.get('keywords', [])
+    try:
+        with open(filename, 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print(f"Error while loading keywords from {filename}.")
+        return []
 
 
 def clean_url(url):

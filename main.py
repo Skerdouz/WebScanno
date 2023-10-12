@@ -8,11 +8,8 @@ import requests
 from bs4 import BeautifulSoup
 
 
-# normalize by adding / at the end
-
-
 # main function
-def search_policies(url, keywords, max_depth, stop_flag, visited_urls, wanted_urls):
+def search_policies(url, keywords, url_keywords, max_depth, stop_flag, visited_urls, wanted_urls):
     try:
         if max_depth <= 0 or stop_flag[0]:
             return
@@ -64,11 +61,10 @@ def search_policies(url, keywords, max_depth, stop_flag, visited_urls, wanted_ur
                 if link.startswith('/'):
                     link = urljoin(url, link)
                 if normalize_url(link) not in visited_urls:
-                    search_policies(link, keywords, max_depth - 1, stop_flag, visited_urls, wanted_urls)
+                    search_policies(link, keywords, url_keywords, max_depth - 1, stop_flag, visited_urls, wanted_urls)
 
                     # check if url is a wanted url
-                    # edit wanted urls here: 'example.com/(url1|url2|...)'
-                    if re.match(r'.*/(contact|contacts|policy|privacy|cgu|cgv|confidentiality|terms)', link):
+                    if re.match(fr'.*/({url_keywords})', link):
                         wanted_urls.setdefault("URLS", []).append(link)
 
     except Exception as e:
@@ -89,13 +85,15 @@ if __name__ == "__main__":
     results = {}
     wanted_urls = {}
 
-    keywords_to_search = load_keywords('keywords.json')
+    data = load_keywords('keywords.json')
+    keywords = data['keywords']
+    url_keywords = '|'.join(data['urls'])
 
     stop_flag = [False]
     visited_urls = set()
     output_directory = input_url.replace("http://", "").replace("https://", "")
 
-    search_policies(input_url, keywords_to_search, max_depth, stop_flag, visited_urls, wanted_urls)
+    search_policies(input_url, keywords, url_keywords, max_depth, stop_flag, visited_urls, wanted_urls)
 
     if results:
         dump_results(results, output_directory, input_url)

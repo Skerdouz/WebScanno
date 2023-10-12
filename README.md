@@ -21,23 +21,23 @@ You can install the required packages by running:
 
 1. Clone this repository or Download the zip folder
 
-2. Customize the `keywords.json` file with your desired keywords
+2. Customize the `keywords.json` file with your desired keywords & wanted urls
 ```json
 {
   "keywords": [
     "keyword1",
     "keyword2",
     "keyword3"
-    ]
+    ],
+  "urls": [
+    "url1",
+    "url2"
+  ]
 }
 ```
 
-3. (Optional) Customize the wanted urls in `main.py` at line 63:
-```python
-if re.match(r'.*/(wanted_url_1|wanted_url_2|...)', link):
-```
 
-4. Run a terminal in the directory and run the script with the following format:
+3. Run a terminal in the directory and run the script with the following format:
 ```bash
 python main.py <str:url> <(optional)int:max_depth[default=3]>
 example: python main.py https://www.certi-data.fr

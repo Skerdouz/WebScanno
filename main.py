@@ -1,22 +1,14 @@
-import json
-import os
 import re
 import sys
-from urllib.parse import urljoin, urlparse, urlunparse
+from urllib.parse import urljoin
+
+from functions import normalize_url, load_keywords, dump_results, dump_urls
 
 import requests
 from bs4 import BeautifulSoup
 
 
 # normalize by adding / at the end
-def normalize_url(url):
-    parts = list(urlparse(url))
-    if not parts[2].endswith('/'):
-        parts[2] += '/'
-    if parts[1].startswith("www."):
-        parts[1] = parts[1][4:]
-
-    return urlunparse(parts)
 
 
 # main function
@@ -77,12 +69,6 @@ def search_policies(url, keywords, max_depth, stop_flag, visited_urls, wanted_ur
         print(f"Error on {url}: {str(e)}")
 
 
-def load_keywords(filename):
-    with open(filename, 'r') as json_file:
-        data = json.load(json_file)
-        return data.get('keywords', [])
-
-
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python main.py <URL> <max_depth>")
@@ -106,23 +92,6 @@ if __name__ == "__main__":
     search_policies(input_url, keywords_to_search, max_depth, stop_flag, visited_urls, wanted_urls)
 
     if results:
-        if not os.path.exists(output_directory):
-            os.makedirs(output_directory)
-
-        filename = os.path.join(output_directory,
-                                input_url.replace("http://", "").replace("https://", "").replace("www.", "").replace(
-                                    "/", "_").
-                                replace(".", "_") + ".json")
-        with open(filename, 'w', encoding='utf-8') as json_file:
-            json.dump(results, json_file, indent=4, ensure_ascii=False)
-
+        dump_results(results, output_directory, input_url)
     if wanted_urls:
-        if not os.path.exists(output_directory):
-            os.makedirs(output_directory)
-
-        filename = os.path.join(output_directory,
-                                input_url.replace("http://", "").replace("https://", "").replace("www.", "").replace(
-                                    "/", "_").
-                                replace(".", "_") + "_wanted.json")
-        with open(filename, 'w') as json_file:
-            json.dump(wanted_urls, json_file, indent=4)
+        dump_urls(wanted_urls, output_directory, input_url)
